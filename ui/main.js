@@ -1,5 +1,3 @@
-const { invoke } = window.__TAURI__.core;
-
 let searchInput;
 let resultsList;
 let statusText;
@@ -111,13 +109,26 @@ async function init() {
   await refreshIndex();
 }
 
+// Native bridge wrapper
+function nativeInvoke(command, args) {
+  return new Promise((resolve, reject) => {
+    if (window[command]) {
+      window[command](JSON.stringify(args)).then(resolve).catch(reject);
+    } else {
+      console.warn(`Command ${command} not found`);
+      reject("Native command not found");
+    }
+  });
+}
+
 async function performSearch() {
   const query = searchInput.value;
   const smartMatch = smartMatchCheck.checked;
   const t = translations[currentLanguage];
 
   try {
-    const results = await invoke("search", { query, smartMatch });
+    const resultStr = await nativeInvoke("search", { query, smartMatch });
+    const results = typeof resultStr === 'string' ? JSON.parse(resultStr) : resultStr;
     renderResults(results);
     statusText.textContent = t.found(results.length);
   } catch (error) {
@@ -131,7 +142,8 @@ async function refreshIndex() {
   statusText.textContent = t.indexing;
 
   try {
-    const count = await invoke("refresh_index");
+    const countStr = await nativeInvoke("refresh_index", {});
+    const count = parseInt(countStr);
     statusText.textContent = t.complete(count);
     await performSearch();
   } catch (error) {
@@ -168,7 +180,7 @@ function renderResults(results) {
       <div class="result-name">${escapeHtml(file.name)}</div>
       <div class="result-path">${escapeHtml(file.path)}</div>
     `;
-    item.addEventListener("click", () => invoke("open_file", { path: file.path }));
+    item.addEventListener("click", () => nativeInvoke("open_file", { path: file.path }));
     resultsList.appendChild(item);
   });
 }
