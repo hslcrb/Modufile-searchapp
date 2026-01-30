@@ -236,3 +236,4 @@ void search_c(const char* query, int smart_match, ResultCallback callback, void*
     
     free(matches);
 }
+ 
