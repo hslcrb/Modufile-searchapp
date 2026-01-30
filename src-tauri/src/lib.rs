@@ -1,9 +1,9 @@
 use serde::{Serialize, Deserialize};
-use std::sync::{Arc, RwLock};
 use tauri::State;
 use std::path::PathBuf;
-use std::ffi::CStr;
-use std::os::raw::{c_char, c_void};
+use std::ffi::{CStr, CString};
+use std::os::raw::{c_char, c_void, c_int};
+use std::sync::Mutex;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct FileInfo {
@@ -11,80 +11,49 @@ pub struct FileInfo {
     path: String,
 }
 
-pub struct AppState {
-    files: Arc<RwLock<Vec<FileInfo>>>,
-}
-
-// C function declaration
+// C function declarations
 extern "C" {
-    fn start_walk(callback: extern "C" fn(*const c_char, *const c_char, *mut c_void), context: *mut c_void);
+    fn refresh_index_c() -> c_int;
+    fn search_c(query: *const c_char, smart_match: c_int, callback: extern "C" fn(*const c_char, *const c_char, *mut c_void), context: *mut c_void);
 }
 
-// Global/Context callback for C
-extern "C" fn file_callback(name: *const c_char, path: *const c_char, context: *mut c_void) {
+// Result Callback
+extern "C" fn search_callback(name: *const c_char, path: *const c_char, context: *mut c_void) {
     unsafe {
         if name.is_null() || path.is_null() { return; }
         
         let name_str = CStr::from_ptr(name).to_string_lossy().into_owned();
         let path_str = CStr::from_ptr(path).to_string_lossy().into_owned();
         
-        // This is safe because we know context is a &mut Vec<FileInfo>
-        let files = &mut *(context as *mut Vec<FileInfo>);
-        files.push(FileInfo { name: name_str, path: path_str });
+        let results = &mut *(context as *mut Vec<FileInfo>);
+        results.push(FileInfo { name: name_str, path: path_str });
     }
 }
 
+// Just a dummy state to satisfy Tauri signatures if needed, though we rely on C static global DB
+pub struct AppState(Mutex<()>);
+
 #[tauri::command]
-fn search(query: String, smart_match: bool, state: State<'_, AppState>) -> Vec<FileInfo> {
-    let files = state.files.read().unwrap();
-    if query.is_empty() {
-        return files.iter().take(100).cloned().collect();
+fn search(query: String, smart_match: bool, _state: State<'_, AppState>) -> Vec<FileInfo> {
+    let mut results = Vec::new();
+    let query_c = CString::new(query).unwrap_or_default();
+    let smart_match_int = if smart_match { 1 } else { 0 };
+    
+    let context_ptr = &mut results as *mut Vec<FileInfo> as *mut c_void;
+    
+    unsafe {
+        search_c(query_c.as_ptr(), smart_match_int, search_callback, context_ptr);
     }
     
-    let query_lower = query.to_lowercase();
-    
-    if smart_match {
-        use fuzzy_matcher::skim::SkimMatcherV2;
-        use fuzzy_matcher::FuzzyMatcher;
-        let matcher = SkimMatcherV2::default();
-        
-        let mut results: Vec<(i64, FileInfo)> = files.iter()
-            .filter_map(|f| {
-                matcher.fuzzy_match(&f.name, &query).map(|score| (score, f.clone()))
-            })
-            .collect();
-            
-        results.sort_by(|a, b| b.0.cmp(&a.0));
-        
-        results.into_iter()
-            .take(200)
-            .map(|(_, f)| f)
-            .collect()
-    } else {
-        files.iter()
-            .filter(|f| f.name.to_lowercase().contains(&query_lower))
-            .take(200)
-            .cloned()
-            .collect()
-    }
+    results
 }
 
 #[tauri::command]
-async fn refresh_index(state: State<'_, AppState>) -> Result<usize, String> {
-    let files_arc = state.files.clone();
-    
+async fn refresh_index(_state: State<'_, AppState>) -> Result<usize, String> {
     tokio::task::spawn_blocking(move || {
-        let mut new_files = Vec::new();
-        let context_ptr = &mut new_files as *mut Vec<FileInfo> as *mut c_void;
-        
         unsafe {
-            start_walk(file_callback, context_ptr);
+            refresh_index_c() as usize
         }
-        
-        let count = new_files.len();
-        let mut files = files_arc.write().unwrap();
-        *files = new_files;
-        count
     }).await.map_err(|e| e.to_string())
 }
 
@@ -95,12 +64,8 @@ fn open_file(path: String) -> Result<(), String> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let state = AppState {
-        files: Arc::new(RwLock::new(Vec::new())),
-    };
-
     tauri::Builder::default()
-        .manage(state)
+        .manage(AppState(Mutex::new(())))
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![search, refresh_index, open_file])
         .run(tauri::generate_context!())
