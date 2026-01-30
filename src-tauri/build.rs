@@ -1,3 +1,7 @@
 fn main() {
-    tauri_build::build()
+    cc::Build::new()
+        .file("src/backend.c")
+        .compile("modufile_backend");
+        
+    tauri_build::build();
 }

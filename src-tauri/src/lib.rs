@@ -2,6 +2,8 @@ use serde::{Serialize, Deserialize};
 use std::sync::{Arc, RwLock};
 use tauri::State;
 use std::path::PathBuf;
+use std::ffi::CStr;
+use std::os::raw::{c_char, c_void};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct FileInfo {
@@ -11,6 +13,25 @@ pub struct FileInfo {
 
 pub struct AppState {
     files: Arc<RwLock<Vec<FileInfo>>>,
+}
+
+// C function declaration
+extern "C" {
+    fn start_walk(callback: extern "C" fn(*const c_char, *const c_char, *mut c_void), context: *mut c_void);
+}
+
+// Global/Context callback for C
+extern "C" fn file_callback(name: *const c_char, path: *const c_char, context: *mut c_void) {
+    unsafe {
+        if name.is_null() || path.is_null() { return; }
+        
+        let name_str = CStr::from_ptr(name).to_string_lossy().into_owned();
+        let path_str = CStr::from_ptr(path).to_string_lossy().into_owned();
+        
+        // This is safe because we know context is a &mut Vec<FileInfo>
+        let files = &mut *(context as *mut Vec<FileInfo>);
+        files.push(FileInfo { name: name_str, path: path_str });
+    }
 }
 
 #[tauri::command]
@@ -53,30 +74,12 @@ async fn refresh_index(state: State<'_, AppState>) -> Result<usize, String> {
     let files_arc = state.files.clone();
     
     tokio::task::spawn_blocking(move || {
-        use jwalk::WalkDir;
+        let mut new_files = Vec::new();
+        let context_ptr = &mut new_files as *mut Vec<FileInfo> as *mut c_void;
         
-        let new_files: Vec<FileInfo> = WalkDir::new("/")
-            .parallelism(jwalk::Parallelism::RayonDefaultPool { busy_timeout: std::time::Duration::from_secs(8) })
-            .skip_hidden(false)
-            .into_iter()
-            .filter_map(|e| e.ok())
-            .filter(|entry| {
-                let path = entry.path();
-                !path.starts_with("/proc") && 
-                !path.starts_with("/sys") && 
-                !path.starts_with("/dev") &&
-                !path.starts_with("/run") &&
-                !path.starts_with("/tmp") &&
-                entry.file_type().is_file()
-            })
-            .map(|entry| {
-                let path = entry.path();
-                FileInfo {
-                    name: path.file_name().unwrap_or_default().to_string_lossy().to_string(),
-                    path: path.to_string_lossy().to_string(),
-                }
-            })
-            .collect();
+        unsafe {
+            start_walk(file_callback, context_ptr);
+        }
         
         let count = new_files.len();
         let mut files = files_arc.write().unwrap();
@@ -87,8 +90,7 @@ async fn refresh_index(state: State<'_, AppState>) -> Result<usize, String> {
 
 #[tauri::command]
 fn open_file(path: String) -> Result<(), String> {
-    opener::reveal(PathBuf::from(path))
-        .map_err(|e: std::io::Error| e.to_string())
+    opener::reveal(PathBuf::from(path)).map_err(|e: std::io::Error| e.to_string())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
