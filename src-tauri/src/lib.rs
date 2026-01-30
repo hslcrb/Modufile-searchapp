@@ -56,7 +56,7 @@ async fn refresh_index(state: State<'_, AppState>) -> Result<usize, String> {
         use jwalk::WalkDir;
         
         let new_files: Vec<FileInfo> = WalkDir::new("/")
-            .parallelism(jwalk::Parallelism::RayonDefaultPool())
+            .parallelism(jwalk::Parallelism::RayonDefaultPool { busy_timeout: None })
             .skip_hidden(false)
             .into_iter()
             .filter_map(|e| e.ok())
