@@ -56,7 +56,7 @@ async fn refresh_index(state: State<'_, AppState>) -> Result<usize, String> {
         use jwalk::WalkDir;
         
         let new_files: Vec<FileInfo> = WalkDir::new("/")
-            .parallelism(jwalk::Parallelism::RayonDefaultPool)
+            .parallelism(jwalk::Parallelism::RayonDefaultPool())
             .skip_hidden(false)
             .into_iter()
             .filter_map(|e| e.ok())
@@ -87,7 +87,8 @@ async fn refresh_index(state: State<'_, AppState>) -> Result<usize, String> {
 
 #[tauri::command]
 fn open_file(path: String) -> Result<(), String> {
-    opener::reveal(PathBuf::from(path)).map_err(|e| e.to_string())
+    opener::reveal(PathBuf::from(path))
+        .map_err(|e: std::io::Error| e.to_string())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
