@@ -22,6 +22,7 @@ private slots:
     void onSearchTextChanged(const QString &text);
     void onRefreshClicked();
     void onIndexingStarted();
+    void onIndexingProgress(int count);
     void onIndexingFinished(int count);
     void onItemActivated(QListWidgetItem *item);
     void onSmartMatchToggled(bool checked);

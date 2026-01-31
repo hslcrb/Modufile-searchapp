@@ -95,10 +95,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_resultsList, &QListWidget::itemActivated, this, &MainWindow::onItemActivated);
 
     connect(&FileEngine::instance(), &FileEngine::indexingStarted, this, &MainWindow::onIndexingStarted);
+    connect(&FileEngine::instance(), &FileEngine::indexingProgress, this, &MainWindow::onIndexingProgress);
     connect(&FileEngine::instance(), &FileEngine::indexingFinished, this, &MainWindow::onIndexingFinished);
     
     // Auto-refresh on start
-    QTimer::singleShot(500, this, &MainWindow::onRefreshClicked);
+    QTimer::singleShot(200, this, &MainWindow::onRefreshClicked);
 }
 
 MainWindow::~MainWindow() {}
@@ -117,7 +118,7 @@ void MainWindow::performSearch() {
     
     for (const auto &f : m_currentResults) {
         QListWidgetItem *item = new QListWidgetItem(m_resultsList);
-        item->setSizeHint(QSize(0, 70)); // Set height for the custom widget
+        item->setSizeHint(QSize(0, 60)); 
         m_resultsList->addItem(item);
         
         FileItemWidget *widget = new FileItemWidget(f.name, f.path);
@@ -125,8 +126,9 @@ void MainWindow::performSearch() {
         item->setData(Qt::UserRole, f.path);
     }
     
-    if (m_currentResults.isEmpty() && !m_searchInput->text().isEmpty()) {
-        m_statusLabel->setText("검색 결과가 없습니다.");
+    if (m_currentResults.isEmpty()) {
+        if (!m_searchInput->text().isEmpty())
+            m_statusLabel->setText("검색 결과가 없습니다.");
     } else {
         m_statusLabel->setText(QString("검색 완료: %1개의 항목 발견").arg(m_currentResults.size()));
     }
@@ -138,12 +140,16 @@ void MainWindow::onRefreshClicked() {
 
 void MainWindow::onIndexingStarted() {
     m_refreshBtn->setEnabled(false);
-    m_statusLabel->setText("시스템 전체 파일을 인덱싱하고 있습니다... (1분 내외 소요)");
+    m_statusLabel->setText("인덱싱 시작 중...");
+}
+
+void MainWindow::onIndexingProgress(int count) {
+    m_statusLabel->setText(QString("실시간 인덱싱 중... (%L1개 파일 스캔 완료)").arg(count));
 }
 
 void MainWindow::onIndexingFinished(int count) {
     m_refreshBtn->setEnabled(true);
-    m_statusLabel->setText(QString("인덱싱 완료! 총 %1개의 파일을 검색 대상으로 등록했습니다.").arg(count));
+    m_statusLabel->setText(QString("인덱싱 완료! 총 %L1개의 파일을 찾았습니다.").arg(count));
     performSearch();
 }
 
