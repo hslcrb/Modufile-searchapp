@@ -28,7 +28,7 @@ private slots:
 
 private:
     void performSearch();
-    void updateList(const QVector<FileInfo> &results);
+    // void updateList(const QVector<FileInfo> &results); // Removed as it is now handled inline
 
     QLineEdit *m_searchInput;
     QListWidget *m_resultsList;

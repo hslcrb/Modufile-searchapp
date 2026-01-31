@@ -29,10 +29,11 @@ void FileEngine::indexingTask() {
     QStringList skipDirs;
 #ifdef Q_OS_WIN
     QString root = "C:/";
-    skipDirs << "C:/Windows" << "C:/$Recycle.Bin" << "C:/System Volume Information" << "C:/ProgramData";
+    skipDirs << "C:/Windows" << "C:/$Recycle.Bin" << "C:/System Volume Information" << "C:/ProgramData" << "C:/PerfLogs";
 #else
     QString root = "/";
-    skipDirs << "/proc" << "/sys" << "/dev" << "/run" << "/tmp" << "/var/lib" << "/var/cache" << "/snap";
+    skipDirs << "/proc" << "/sys" << "/dev" << "/run" << "/tmp" << "/var/lib" << "/var/cache" << "/snap" 
+             << "/timeshift" << "/mnt" << "/media" << "/lost+found" << "/.trash" << "/boot" << "/srv";
 #endif
 
     qDebug() << "인덱싱 시작: " << root;
