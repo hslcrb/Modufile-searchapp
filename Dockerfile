@@ -1,50 +1,36 @@
 # Build stage
-FROM rust:1.75-slim-bookworm as builder
+FROM ubuntu:22.04 as builder
 
-# Install system dependencies for Tauri build
+# Avoid prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install build dependencies and Qt 6
 RUN apt-get update && apt-get install -y \
-    libgtk-3-dev \
-    libwebkit2gtk-4.1-dev \
-    libappindicator3-dev \
-    librsvg2-dev \
-    patchelf \
-    libsoup-3.0-dev \
-    curl \
     build-essential \
-    pkg-config \
-    libssl-dev \
+    cmake \
     git \
+    qt6-base-dev \
+    qt6-base-private-dev \
+    libgl1-mesa-dev \
     && rm -rf /var/lib/apt/lists/*
-
-# Install Node.js
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y nodejs
 
 WORKDIR /app
-
-# Copy files
 COPY . .
 
-# Install frontend dependencies
-RUN npm install
-
 # Build the application
-RUN npm run tauri build
+RUN cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+RUN cmake --build build --config Release
 
-# Final stage - for a GUI app in Docker, we typically use a VNC-based setup 
-# if we want to run it, but here we'll just provide a base to hold the artifact 
-# or run in a minimal X11 environment.
-FROM debian:bookworm-slim
+# Final stage - Minimal runtime
+FROM ubuntu:22.04
 
 RUN apt-get update && apt-get install -y \
-    libgtk-3-0 \
-    libwebkit2gtk-4.1-0 \
-    libsoup-3.0-0 \
-    libjavascriptcoregtk-4.1-0 \
-    ca-certificates \
+    libqt6widgets6 \
+    libqt6gui6 \
+    libqt6core6 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/src-tauri/target/release/modufile /usr/local/bin/modufile
+COPY --from=builder /app/build/modufile /usr/local/bin/modufile
 
-# Set the entrypoint
+# Entrypoint
 ENTRYPOINT ["/usr/local/bin/modufile"]
