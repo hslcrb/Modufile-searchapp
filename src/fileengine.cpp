@@ -29,16 +29,21 @@ void FileEngine::indexingTask() {
     QStringList skipDirs;
 #ifdef Q_OS_WIN
     QString root = "C:/";
-    skipDirs << "C:/Windows" << "C:/$Recycle.Bin" << "C:/System Volume Information";
+    skipDirs << "C:/Windows" << "C:/$Recycle.Bin" << "C:/System Volume Information" << "C:/ProgramData";
 #else
     QString root = "/";
-    skipDirs << "/proc" << "/sys" << "/dev" << "/run" << "/tmp" << "/var/lib" << "/var/cache";
+    skipDirs << "/proc" << "/sys" << "/dev" << "/run" << "/tmp" << "/var/lib" << "/var/cache" << "/snap";
 #endif
 
+    qDebug() << "인덱싱 시작: " << root;
+
     try {
-        for (auto const& entry : fs::recursive_directory_iterator(root.toStdString(), fs::directory_options::skip_permission_denied)) {
+        auto it = fs::recursive_directory_iterator(root.toStdString(), fs::directory_options::skip_permission_denied);
+        auto end = fs::recursive_directory_iterator();
+
+        while (it != end) {
             try {
-                auto path = QString::fromStdString(entry.path().string());
+                auto path = QString::fromStdString(it->path().string());
                 
                 bool skip = false;
                 for (const auto& s : skipDirs) {
@@ -47,35 +52,43 @@ void FileEngine::indexingTask() {
                         break;
                     }
                 }
+                
                 if (skip) {
-                    if (entry.is_directory()) {
-                        // We can't easily tell the iterator to skip from here without more complex logic
-                        // but std::filesystem is fast enough for now.
-                    }
+                    it.disable_recursion_pending();
+                    ++it;
                     continue;
                 }
 
-                if (entry.is_regular_file()) {
-                    newFiles.append({QString::fromStdString(entry.path().filename().string()), path});
+                if (it->is_regular_file()) {
+                    newFiles.append({QString::fromStdString(it->path().filename().string()), path});
                     if (newFiles.size() % 10000 == 0) {
                         emit indexingProgress(newFiles.size());
                     }
                 }
+                ++it;
+            } catch (const std::exception& e) {
+                qDebug() << "접근 오류 건너뜀: " << e.what();
+                try { ++it; } catch (...) { break; }
             } catch (...) {
-                continue;
+                try { ++it; } catch (...) { break; }
             }
         }
-    } catch (...) {}
+    } catch (const std::exception& e) {
+        qDebug() << "치명적 인덱싱 오류: " << e.what();
+    }
 
     {
         QWriteLocker locker(&m_lock);
         m_files = std::move(newFiles);
     }
     m_isIndexing = false;
+    qDebug() << "인덱싱 완료. 총 파일 수: " << m_files.size();
     emit indexingFinished(m_files.size());
 }
 
 int FileEngine::fuzzyScore(const QString &str, const QString &pattern) {
+    if (pattern.isEmpty()) return 0;
+    
     int score = 0;
     int run = 0;
     int strIdx = 0;
@@ -105,7 +118,8 @@ QVector<FileInfo> FileEngine::search(const QString &query, bool smartMatch) {
     QVector<FileInfo> results;
 
     if (query.isEmpty()) {
-        for (int i = 0; i < qMin(100, (int)m_files.size()); ++i) {
+        int limit = qMin(100, (int)m_files.size());
+        for (int i = 0; i < limit; ++i) {
             results.append(m_files[i]);
         }
         return results;
@@ -116,22 +130,24 @@ QVector<FileInfo> FileEngine::search(const QString &query, bool smartMatch) {
             const FileInfo* info;
             int score;
         };
-        QVector<Match> matches;
-        matches.reserve(m_files.size() / 10);
+        std::vector<Match> matches;
+        matches.reserve(qMin((int)m_files.size(), 10000));
 
         for (const auto& f : m_files) {
             int score = fuzzyScore(f.name, query);
             if (score > 0) {
-                matches.append({&f, score});
-                if (matches.size() > 10000) break;
+                matches.push_back({&f, score});
+                if (matches.size() > 50000) break;
             }
         }
 
         std::sort(matches.begin(), matches.end(), [](const Match& a, const Match& b) {
-            return a.score > b.score;
+            if (a.score != b.score) return a.score > b.score;
+            return a.info->name.length() < b.info->name.length();
         });
 
-        for (int i = 0; i < qMin(200, matches.size()); ++i) {
+        int limit = qMin(200, (int)matches.size());
+        for (int i = 0; i < limit; ++i) {
             results.append(*matches[i].info);
         }
     } else {

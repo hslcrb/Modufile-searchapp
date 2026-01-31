@@ -5,7 +5,7 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent) {
-    setWindowTitle("모두파일 (Modufile) - Native C++ Edition");
+    setWindowTitle("모두파일 (Modufile) - 네이티브 C++ 에디션");
     resize(800, 600);
 
     QWidget *centralWidget = new QWidget(this);
@@ -18,13 +18,13 @@ MainWindow::MainWindow(QWidget *parent)
     // Header
     QHBoxLayout *headerLayout = new QHBoxLayout();
     m_searchInput = new QLineEdit();
-    m_searchInput->setPlaceholderText("Search files...");
+    m_searchInput->setPlaceholderText("파일 이름 검색...");
     m_searchInput->setStyleSheet("padding: 8px; font-size: 14px; border-radius: 4px; border: 1px solid #ccc;");
     
-    m_smartMatchCheck = new QCheckBox("Smart Match (Al-Jal-Ttak)");
+    m_smartMatchCheck = new QCheckBox("알잘딱 (스마트 매칭)");
     m_smartMatchCheck->setChecked(true);
     
-    m_refreshBtn = new QPushButton("Refresh Index");
+    m_refreshBtn = new QPushButton("인덱싱 갱신");
     m_refreshBtn->setStyleSheet("padding: 8px 15px; background-color: #a855f7; color: white; border-radius: 4px; font-weight: bold;");
 
     headerLayout->addWidget(m_searchInput, 1);
@@ -33,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent)
     mainLayout->addLayout(headerLayout);
 
     // Status
-    m_statusLabel = new QLabel("Waiting...");
+    m_statusLabel = new QLabel("대기 중...");
     m_statusLabel->setStyleSheet("color: #666; font-style: italic;");
     mainLayout->addWidget(m_statusLabel);
 
@@ -54,7 +54,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&FileEngine::instance(), &FileEngine::indexingFinished, this, &MainWindow::onIndexingFinished);
     
     // Initial indexing
-    QTimer::singleShot(500, this, &MainWindow::onRefreshClicked);
+    QTimer::singleShot(200, this, &MainWindow::onRefreshClicked);
 }
 
 MainWindow::~MainWindow() {}
@@ -70,7 +70,7 @@ void MainWindow::onSmartMatchToggled(bool) {
 void MainWindow::performSearch() {
     m_currentResults = FileEngine::instance().search(m_searchInput->text(), m_smartMatchCheck->isChecked());
     updateList(m_currentResults);
-    m_statusLabel->setText(QString("Found %1 results").arg(m_currentResults.size()));
+    m_statusLabel->setText(QString("검색 결과: %1개").arg(m_currentResults.size()));
 }
 
 void MainWindow::updateList(const QVector<FileInfo> &results) {
@@ -88,12 +88,12 @@ void MainWindow::onRefreshClicked() {
 
 void MainWindow::onIndexingStarted() {
     m_refreshBtn->setEnabled(false);
-    m_statusLabel->setText("Indexing system files... this might take a moment.");
+    m_statusLabel->setText("시스템 파일을 스캐닝하고 있습니다... 잠시만 기다려 주세요.");
 }
 
 void MainWindow::onIndexingFinished(int count) {
     m_refreshBtn->setEnabled(true);
-    m_statusLabel->setText(QString("Indexing complete. Indexed %1 files.").arg(count));
+    m_statusLabel->setText(QString("인덱싱 완료. 총 %1개의 파일을 찾았습니다.").arg(count));
     performSearch();
 }
 
