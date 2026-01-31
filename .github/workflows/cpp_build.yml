@@ -1,16 +1,21 @@
-name: Build Qt Modufile
+name: Build and Release Modufile
 
 on:
   push:
     branches: [ "main" ]
+    tags: [ "v*" ]
   pull_request:
     branches: [ "main" ]
+
+permissions:
+  contents: write
 
 jobs:
   build:
     name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
@@ -32,11 +37,48 @@ jobs:
     - name: Build
       run: cmake --build build --config Release
 
+    - name: Prepare Artifacts (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        Compress-Archive -Path build/Release/modufile.exe -DestinationPath modufile-windows.zip
+
+    - name: Prepare Artifacts (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        zip -j modufile-linux.zip build/modufile
+
+    - name: Prepare Artifacts (macOS)
+      if: runner.os == 'MacOS'
+      run: |
+        zip -r modufile-macos.zip build/modufile.app
+
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: modufile-${{ matrix.os }}
-        path: |
-          build/modufile
-          build/Release/modufile.exe
-          build/modufile.app
+        name: binary-${{ matrix.os }}
+        path: modufile-*.zip
+
+  release:
+    name: Create Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+        pattern: binary-*
+        merge-multiple: true
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: artifacts/*.zip
+        tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'latest' }}
+        name: Release ${{ github.ref_type == 'tag' && github.ref_name || 'Latest Build' }}
+        draft: false
+        prerelease: ${{ github.ref_type != 'tag' }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
