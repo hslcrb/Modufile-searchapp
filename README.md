@@ -20,6 +20,17 @@
 
 ## 🚀 시작하기
 
+### 원클릭 실행 (개발 환경 전용)
+별도의 복잡한 명령어 없이 스크립트 실행만으로 빌드부터 실행까지 한 번에 처리할 수 있습니다.
+
+- **Linux / macOS**:
+  ```bash
+  chmod +x run.sh
+  ./run.sh
+  ```
+- **Windows**:
+  `run.bat` 파일을 더블 클릭하거나 명령 프롬프트에서 실행하세요.
+
 ### 실행 파일 다운로드
 [Releases](https://github.com/hslcrb/Modufile-searchapp/releases) 탭에서 각 OS에 맞는 최신 빌드(`latest`)를 다운로드하여 즉시 사용할 수 있습니다.
 
