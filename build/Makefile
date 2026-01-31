@@ -263,6 +263,30 @@ modufile-cli_autogen/mocs_compilation.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/modufile-cli.dir/build.make CMakeFiles/modufile-cli.dir/modufile-cli_autogen/mocs_compilation.cpp.s
 .PHONY : modufile-cli_autogen/mocs_compilation.cpp.s
 
+modufile_autogen/EWIEGA46WW/qrc_resources.o: modufile_autogen/EWIEGA46WW/qrc_resources.cpp.o
+.PHONY : modufile_autogen/EWIEGA46WW/qrc_resources.o
+
+# target to build an object file
+modufile_autogen/EWIEGA46WW/qrc_resources.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modufile.dir/build.make CMakeFiles/modufile.dir/modufile_autogen/EWIEGA46WW/qrc_resources.cpp.o
+.PHONY : modufile_autogen/EWIEGA46WW/qrc_resources.cpp.o
+
+modufile_autogen/EWIEGA46WW/qrc_resources.i: modufile_autogen/EWIEGA46WW/qrc_resources.cpp.i
+.PHONY : modufile_autogen/EWIEGA46WW/qrc_resources.i
+
+# target to preprocess a source file
+modufile_autogen/EWIEGA46WW/qrc_resources.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modufile.dir/build.make CMakeFiles/modufile.dir/modufile_autogen/EWIEGA46WW/qrc_resources.cpp.i
+.PHONY : modufile_autogen/EWIEGA46WW/qrc_resources.cpp.i
+
+modufile_autogen/EWIEGA46WW/qrc_resources.s: modufile_autogen/EWIEGA46WW/qrc_resources.cpp.s
+.PHONY : modufile_autogen/EWIEGA46WW/qrc_resources.s
+
+# target to generate assembly for a file
+modufile_autogen/EWIEGA46WW/qrc_resources.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modufile.dir/build.make CMakeFiles/modufile.dir/modufile_autogen/EWIEGA46WW/qrc_resources.cpp.s
+.PHONY : modufile_autogen/EWIEGA46WW/qrc_resources.cpp.s
+
 modufile_autogen/mocs_compilation.o: modufile_autogen/mocs_compilation.cpp.o
 .PHONY : modufile_autogen/mocs_compilation.o
 
@@ -383,6 +407,9 @@ help:
 	@echo "... modufile-cli_autogen/mocs_compilation.o"
 	@echo "... modufile-cli_autogen/mocs_compilation.i"
 	@echo "... modufile-cli_autogen/mocs_compilation.s"
+	@echo "... modufile_autogen/EWIEGA46WW/qrc_resources.o"
+	@echo "... modufile_autogen/EWIEGA46WW/qrc_resources.i"
+	@echo "... modufile_autogen/EWIEGA46WW/qrc_resources.s"
 	@echo "... modufile_autogen/mocs_compilation.o"
 	@echo "... modufile_autogen/mocs_compilation.i"
 	@echo "... modufile_autogen/mocs_compilation.s"

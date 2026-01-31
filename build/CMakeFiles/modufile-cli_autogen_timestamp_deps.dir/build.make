@@ -66,12 +66,12 @@ include CMakeFiles/modufile-cli_autogen_timestamp_deps.dir/compiler_depend.make
 # Include the progress variables for this target.
 include CMakeFiles/modufile-cli_autogen_timestamp_deps.dir/progress.make
 
-CMakeFiles/modufile-cli_autogen_timestamp_deps: /usr/lib/x86_64-linux-gnu/libQt6Gui.so.6.4.2
+CMakeFiles/modufile-cli_autogen_timestamp_deps: /usr/lib/x86_64-linux-gnu/libQt6Concurrent.so.6.4.2
 CMakeFiles/modufile-cli_autogen_timestamp_deps: /usr/lib/x86_64-linux-gnu/libQt6Widgets.so.6.4.2
 CMakeFiles/modufile-cli_autogen_timestamp_deps: /usr/lib/qt6/libexec/uic
 CMakeFiles/modufile-cli_autogen_timestamp_deps: /usr/lib/qt6/libexec/moc
+CMakeFiles/modufile-cli_autogen_timestamp_deps: /usr/lib/x86_64-linux-gnu/libQt6Gui.so.6.4.2
 CMakeFiles/modufile-cli_autogen_timestamp_deps: /usr/lib/x86_64-linux-gnu/libQt6Core.so.6.4.2
-CMakeFiles/modufile-cli_autogen_timestamp_deps: /usr/lib/x86_64-linux-gnu/libQt6Concurrent.so.6.4.2
 
 modufile-cli_autogen_timestamp_deps: CMakeFiles/modufile-cli_autogen_timestamp_deps
 modufile-cli_autogen_timestamp_deps: CMakeFiles/modufile-cli_autogen_timestamp_deps.dir/build.make

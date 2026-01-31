@@ -1,0 +1,10 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/">
+        <file>resources/icons/file.svg</file>
+        <file>resources/icons/image.svg</file>
+        <file>resources/icons/video.svg</file>
+        <file>resources/icons/code.svg</file>
+        <file>resources/icons/folder.svg</file>
+    </qresource>
+</RCC>

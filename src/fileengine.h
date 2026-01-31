@@ -14,6 +14,7 @@
 struct FileInfo {
     QString name;
     QString path;
+    QString nameLower; // Optimized for search
 };
 
 class FileEngine : public QObject {

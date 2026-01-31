@@ -2,6 +2,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/modufile_autogen.dir/AutogenUsed.txt"
   "CMakeFiles/modufile_autogen.dir/ParseCache.txt"
   "modufile_autogen"
+  "CMakeFiles/modufile.dir/modufile_autogen/EWIEGA46WW/qrc_resources.cpp.o"
+  "CMakeFiles/modufile.dir/modufile_autogen/EWIEGA46WW/qrc_resources.cpp.o.d"
   "CMakeFiles/modufile.dir/modufile_autogen/mocs_compilation.cpp.o"
   "CMakeFiles/modufile.dir/modufile_autogen/mocs_compilation.cpp.o.d"
   "CMakeFiles/modufile.dir/src/fileengine.cpp.o"
@@ -10,6 +12,7 @@ file(REMOVE_RECURSE
   "CMakeFiles/modufile.dir/src/main.cpp.o.d"
   "modufile"
   "modufile.pdb"
+  "modufile_autogen/EWIEGA46WW/qrc_resources.cpp"
   "modufile_autogen/mocs_compilation.cpp"
   "modufile_autogen/timestamp"
 )

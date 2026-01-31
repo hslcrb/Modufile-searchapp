@@ -12,6 +12,7 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets Core Gui Concurrent)
 
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 file(GLOB_RECURSE HEADERS "src/*.h")
+set(RESOURCES resources.qrc)
 
 # Separate sources
 list(FILTER SOURCES EXCLUDE REGEX ".*cli_main.cpp$")
@@ -19,11 +20,11 @@ list(FILTER SOURCES EXCLUDE REGEX ".*main.cpp$")
 
 # GUI Application
 if(WIN32)
-    add_executable(modufile WIN32 src/main.cpp ${SOURCES} ${HEADERS})
+    add_executable(modufile WIN32 src/main.cpp ${SOURCES} ${HEADERS} ${RESOURCES})
 elseif(APPLE)
-    add_executable(modufile MACOSX_BUNDLE src/main.cpp ${SOURCES} ${HEADERS})
+    add_executable(modufile MACOSX_BUNDLE src/main.cpp ${SOURCES} ${HEADERS} ${RESOURCES})
 else()
-    add_executable(modufile src/main.cpp ${SOURCES} ${HEADERS})
+    add_executable(modufile src/main.cpp ${SOURCES} ${HEADERS} ${RESOURCES})
 endif()
 
 target_link_libraries(modufile PRIVATE Qt6::Widgets Qt6::Core Qt6::Gui Qt6::Concurrent)

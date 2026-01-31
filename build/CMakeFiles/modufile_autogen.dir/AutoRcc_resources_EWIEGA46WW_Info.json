@@ -1,0 +1,27 @@
+{
+	"BUILD_DIR" : "/home/rheehose/\ubb38\uc11c/rheeworks_py/Modufileapp/build/modufile_autogen",
+	"CMAKE_BINARY_DIR" : "/home/rheehose/\ubb38\uc11c/rheeworks_py/Modufileapp/build",
+	"CMAKE_CURRENT_BINARY_DIR" : "/home/rheehose/\ubb38\uc11c/rheeworks_py/Modufileapp/build",
+	"CMAKE_CURRENT_SOURCE_DIR" : "/home/rheehose/\ubb38\uc11c/rheeworks_py/Modufileapp",
+	"CMAKE_SOURCE_DIR" : "/home/rheehose/\ubb38\uc11c/rheeworks_py/Modufileapp",
+	"GENERATOR" : "Unix Makefiles",
+	"INCLUDE_DIR" : "/home/rheehose/\ubb38\uc11c/rheeworks_py/Modufileapp/build/modufile_autogen/include",
+	"INPUTS" : 
+	[
+		"/home/rheehose/\ubb38\uc11c/rheeworks_py/Modufileapp/resources/icons/video.svg",
+		"/home/rheehose/\ubb38\uc11c/rheeworks_py/Modufileapp/resources/icons/file.svg",
+		"/home/rheehose/\ubb38\uc11c/rheeworks_py/Modufileapp/resources/icons/folder.svg",
+		"/home/rheehose/\ubb38\uc11c/rheeworks_py/Modufileapp/resources/icons/image.svg",
+		"/home/rheehose/\ubb38\uc11c/rheeworks_py/Modufileapp/resources/icons/code.svg"
+	],
+	"LOCK_FILE" : "/home/rheehose/\ubb38\uc11c/rheeworks_py/Modufileapp/build/CMakeFiles/modufile_autogen.dir/AutoRcc_resources_EWIEGA46WW_Lock.lock",
+	"MULTI_CONFIG" : false,
+	"OPTIONS" : [ "-name", "resources" ],
+	"OUTPUT_CHECKSUM" : "EWIEGA46WW",
+	"OUTPUT_NAME" : "qrc_resources.cpp",
+	"RCC_EXECUTABLE" : "/usr/lib/qt6/libexec/rcc",
+	"RCC_LIST_OPTIONS" : [ "--list" ],
+	"SETTINGS_FILE" : "/home/rheehose/\ubb38\uc11c/rheeworks_py/Modufileapp/build/CMakeFiles/modufile_autogen.dir/AutoRcc_resources_EWIEGA46WW_Used.txt",
+	"SOURCE" : "/home/rheehose/\ubb38\uc11c/rheeworks_py/Modufileapp/resources.qrc",
+	"VERBOSITY" : 0
+}

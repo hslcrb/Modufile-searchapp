@@ -11,82 +11,124 @@
 #include <QPushButton>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QIcon>
+#include <QPixmap>
 #include "mainwindow.h"
 #include "fileengine.h"
 
-// Custom Widget for List Items to ensure perfect visibility
+// Minimalist Item Widget with Icon
 class FileItemWidget : public QWidget {
 public:
     FileItemWidget(const QString &name, const QString &path, QWidget *parent = nullptr) : QWidget(parent) {
-        QVBoxLayout *layout = new QVBoxLayout(this);
-        layout->setContentsMargins(10, 5, 10, 5);
-        layout->setSpacing(2);
+        QHBoxLayout *layout = new QHBoxLayout(this);
+        layout->setContentsMargins(10, 8, 10, 8);
+        layout->setSpacing(15);
+
+        // Icon
+        QLabel *iconLabel = new QLabel;
+        iconLabel->setFixedSize(32, 32);
+        
+        QString lowerName = name.toLower();
+        QString iconPath = ":/resources/icons/file.svg";
+        
+        if (lowerName.endsWith(".jpg") || lowerName.endsWith(".png") || lowerName.endsWith(".gif") || lowerName.endsWith(".webp") || lowerName.endsWith(".svg")) {
+            iconPath = ":/resources/icons/image.svg";
+        } else if (lowerName.endsWith(".mp4") || lowerName.endsWith(".avi") || lowerName.endsWith(".mkv") || lowerName.endsWith(".mov")) {
+            iconPath = ":/resources/icons/video.svg";
+        } else if (lowerName.endsWith(".cpp") || lowerName.endsWith(".h") || lowerName.endsWith(".py") || lowerName.endsWith(".js") || lowerName.endsWith(".html") || lowerName.endsWith(".css") || lowerName.endsWith(".json") || lowerName.endsWith(".md")) {
+            iconPath = ":/resources/icons/code.svg";
+        }
+        
+        QPixmap pixmap(iconPath);
+        iconLabel->setPixmap(pixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        layout->addWidget(iconLabel);
+
+        // Text Info
+        QVBoxLayout *textLayout = new QVBoxLayout;
+        textLayout->setSpacing(2);
+        textLayout->setContentsMargins(0, 0, 0, 0);
 
         QLabel *nameLabel = new QLabel(name);
-        nameLabel->setStyleSheet("font-weight: bold; font-size: 15px; color: #f8fafc;");
+        nameLabel->setStyleSheet("font-weight: 600; font-size: 15px; color: #f1f5f9;");
         
         QLabel *pathLabel = new QLabel(path);
-        pathLabel->setStyleSheet("font-size: 12px; color: #94a3b8;");
+        pathLabel->setStyleSheet("font-size: 12px; color: #64748b;"); // Muted slate color
 
-        layout->addWidget(nameLabel);
-        layout->addWidget(pathLabel);
+        textLayout->addWidget(nameLabel);
+        textLayout->addWidget(pathLabel);
+        
+        layout->addLayout(textLayout);
+        layout->addStretch(); // Push everything to left
+        
         setLayout(layout);
+        setAttribute(Qt::WA_TransparentForMouseEvents); // Let the list widget handle clicks
     }
 };
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent) {
-    setWindowTitle("모두파일 (Modufile) - 네이티브 에디션");
+    setWindowTitle("Modufile"); // Clean title
     resize(1000, 750);
 
-    // Global Dark Background
-    setStyleSheet("QMainWindow { background-color: #0f172a; } "
-                  "QWidget { color: #f1f5f9; }");
+    // Ultra Dark & Clean Theme
+    setStyleSheet("QMainWindow { background-color: #0b0f19; }"
+                  "QWidget { font-family: 'Inter', sans-serif; }"
+                  "QScrollBar:vertical { border: none; background: #0b0f19; width: 8px; margin: 0px; }"
+                  "QScrollBar::handle:vertical { background: #334155; min-height: 20px; border-radius: 4px; }"
+                  "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; }");
 
     QWidget *centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
-    mainLayout->setContentsMargins(20, 20, 20, 20);
-    mainLayout->setSpacing(15);
+    mainLayout->setContentsMargins(30, 30, 30, 30);
+    mainLayout->setSpacing(20);
 
-    // Search Bar Area
+    // --- Minimalist Header ---
     QHBoxLayout *headerLayout = new QHBoxLayout();
+    headerLayout->setSpacing(15);
+
     m_searchInput = new QLineEdit();
-    m_searchInput->setPlaceholderText("찾고 싶은 파일 이름을 입력하세요...");
-    m_searchInput->setStyleSheet("QLineEdit { padding: 15px; font-size: 17px; border-radius: 10px; "
-                                 "background-color: #1e293b; border: 2px solid #334155; color: white; }"
-                                 "QLineEdit:focus { border: 2px solid #a855f7; }");
+    m_searchInput->setPlaceholderText("검색...");
+    m_searchInput->setStyleSheet("QLineEdit { padding: 16px; font-size: 18px; border: none; border-radius: 12px; "
+                                 "background-color: #1a202c; color: #e2e8f0; selection-background-color: #8b5cf6; }"
+                                 "QLineEdit:focus { background-color: #2d3748; }");
     
-    m_smartMatchCheck = new QCheckBox("알잘딱 매칭");
-    m_smartMatchCheck->setChecked(true);
-    m_smartMatchCheck->setStyleSheet("QCheckBox { font-weight: bold; margin-left: 10px; color: #e2e8f0; }");
-    
-    m_refreshBtn = new QPushButton("인덱싱 갱신");
+    // Icon-only refresh button idea or simple text
+    m_refreshBtn = new QPushButton("갱신");
     m_refreshBtn->setCursor(Qt::PointingHandCursor);
-    m_refreshBtn->setStyleSheet("QPushButton { padding: 12px 25px; background-color: #a855f7; color: white; "
-                                 "border-radius: 10px; font-weight: bold; font-size: 14px; border: none; }"
-                                 "QPushButton:hover { background-color: #9333ea; }"
-                                 "QPushButton:disabled { background-color: #475569; }");
+    m_refreshBtn->setFixedWidth(80);
+    m_refreshBtn->setStyleSheet("QPushButton { padding: 16px; background-color: #1a202c; color: #94a3b8; "
+                                 "border-radius: 12px; font-weight: 600; border: none; font-size: 14px; }"
+                                 "QPushButton:hover { background-color: #2d3748; color: white; }"
+                                 "QPushButton:pressed { background-color: #4a5568; }");
+
+    m_smartMatchCheck = new QCheckBox("Smart");
+    m_smartMatchCheck->setChecked(true);
+    m_smartMatchCheck->setStyleSheet("QCheckBox { color: #64748b; font-weight: 600; spacing: 8px; } "
+                                     "QCheckBox::indicator { width: 16px; height: 16px; border-radius: 4px; border: 1px solid #475569; } "
+                                     "QCheckBox::indicator:checked { background-color: #8b5cf6; border: none; }");
 
     headerLayout->addWidget(m_searchInput, 1);
     headerLayout->addWidget(m_smartMatchCheck);
     headerLayout->addWidget(m_refreshBtn);
     mainLayout->addLayout(headerLayout);
 
-    // Status Label
-    m_statusLabel = new QLabel("서버 연결 중...");
-    m_statusLabel->setStyleSheet("color: #cbd5e1; font-weight: 500;");
-    mainLayout->addWidget(m_statusLabel);
-
-    // Results List
+    // --- List Area ---
     m_resultsList = new QListWidget();
-    m_resultsList->setStyleSheet("QListWidget { background-color: #1e293b; border: 2px solid #334155; "
-                                 "border-radius: 12px; outline: none; } "
-                                 "QListWidget::item { background-color: transparent; border-bottom: 1px solid #1e293b; } "
-                                 "QListWidget::item:selected { background-color: #334155; border-radius: 8px; }");
+    m_resultsList->setFrameShape(QFrame::NoFrame); // No borders
+    m_resultsList->setStyleSheet("QListWidget { background-color: transparent; outline: none; }"
+                                 "QListWidget::item { background-color: transparent; border-bottom: 1px solid #1e293b; padding: 0px; }"
+                                 "QListWidget::item:selected { background-color: #1e293b; border-radius: 12px; border-bottom: none; }");
     m_resultsList->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+    m_resultsList->setUniformItemSizes(true); // Optimization
     mainLayout->addWidget(m_resultsList, 1);
+
+    // --- Minimal Footer ---
+    m_statusLabel = new QLabel("");
+    m_statusLabel->setStyleSheet("color: #475569; font-size: 12px; font-weight: 500;");
+    m_statusLabel->setAlignment(Qt::AlignRight);
+    mainLayout->addWidget(m_statusLabel);
 
     // Connections
     connect(m_searchInput, &QLineEdit::textChanged, this, &MainWindow::onSearchTextChanged);
@@ -102,7 +144,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&FileEngine::instance(), &FileEngine::searchFinished, this, &MainWindow::onSearchFinished);
     
     // Auto-refresh on start
-    QTimer::singleShot(200, this, &MainWindow::onRefreshClicked);
+    QTimer::singleShot(500, this, &MainWindow::onRefreshClicked);
 }
 
 MainWindow::~MainWindow() {}
@@ -116,10 +158,7 @@ void MainWindow::onSmartMatchToggled(bool) {
 }
 
 void MainWindow::performSearch() {
-    // Show searching status
-    m_statusLabel->setText("검색 중...");
-    
-    // Trigger async search
+    m_statusLabel->setText("searching...");
     FileEngine::instance().searchAsync(m_searchInput->text(), m_smartMatchCheck->isChecked());
 }
 
@@ -127,13 +166,12 @@ void MainWindow::onSearchFinished(QVector<FileInfo> results) {
     m_resultsList->clear();
     m_currentResults = results;
     
-    // Use a limit to prevent UI lag on huge result sets if somehow returned
     int limit = qMin(results.size(), 200); 
 
     for (int i = 0; i < limit; ++i) {
         const auto& f = results[i];
         QListWidgetItem *item = new QListWidgetItem(m_resultsList);
-        item->setSizeHint(QSize(0, 60)); 
+        item->setSizeHint(QSize(0, 72)); 
         m_resultsList->addItem(item);
         
         FileItemWidget *widget = new FileItemWidget(f.name, f.path);
@@ -141,11 +179,10 @@ void MainWindow::onSearchFinished(QVector<FileInfo> results) {
         item->setData(Qt::UserRole, f.path);
     }
     
-    if (m_currentResults.isEmpty()) {
-        if (!m_searchInput->text().isEmpty())
-            m_statusLabel->setText("검색 결과가 없습니다.");
+    if (m_currentResults.isEmpty() && !m_searchInput->text().isEmpty()) {
+        m_statusLabel->setText("no results");
     } else {
-        m_statusLabel->setText(QString("검색 완료: %1개의 항목 발견").arg(m_currentResults.size()));
+        m_statusLabel->setText(QString("%1").arg(m_currentResults.size()));
     }
 }
 
@@ -155,16 +192,16 @@ void MainWindow::onRefreshClicked() {
 
 void MainWindow::onIndexingStarted() {
     m_refreshBtn->setEnabled(false);
-    m_statusLabel->setText("인덱싱 시작 중...");
+    m_statusLabel->setText("indexing...");
 }
 
 void MainWindow::onIndexingProgress(int count) {
-    m_statusLabel->setText(QString("실시간 인덱싱 중... (%L1개 파일 스캔 완료)").arg(count));
+    m_statusLabel->setText(QString("indexing %1").arg(count));
 }
 
 void MainWindow::onIndexingFinished(int count) {
     m_refreshBtn->setEnabled(true);
-    m_statusLabel->setText(QString("인덱싱 완료! 총 %L1개의 파일을 찾았습니다.").arg(count));
+    m_statusLabel->setText(QString("ready (%1 files)").arg(count));
     performSearch();
 }
 

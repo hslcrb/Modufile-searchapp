@@ -9,6 +9,7 @@
 #include <memory>
 #include "../../../src/fileengine.h"
 #include <QtCore/qmetatype.h>
+#include <QtCore/QList>
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'fileengine.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 68
@@ -26,13 +27,16 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 namespace {
 struct qt_meta_stringdata_FileEngine_t {
-    uint offsetsAndSizes[12];
+    uint offsetsAndSizes[18];
     char stringdata0[11];
     char stringdata1[16];
     char stringdata2[1];
     char stringdata3[17];
     char stringdata4[6];
     char stringdata5[17];
+    char stringdata6[15];
+    char stringdata7[16];
+    char stringdata8[8];
 };
 #define QT_MOC_LITERAL(ofs, len) \
     uint(sizeof(qt_meta_stringdata_FileEngine_t::offsetsAndSizes) + ofs), len 
@@ -43,14 +47,20 @@ Q_CONSTINIT static const qt_meta_stringdata_FileEngine_t qt_meta_stringdata_File
         QT_MOC_LITERAL(27, 0),  // ""
         QT_MOC_LITERAL(28, 16),  // "indexingFinished"
         QT_MOC_LITERAL(45, 5),  // "count"
-        QT_MOC_LITERAL(51, 16)   // "indexingProgress"
+        QT_MOC_LITERAL(51, 16),  // "indexingProgress"
+        QT_MOC_LITERAL(68, 14),  // "searchFinished"
+        QT_MOC_LITERAL(83, 15),  // "QList<FileInfo>"
+        QT_MOC_LITERAL(99, 7)   // "results"
     },
     "FileEngine",
     "indexingStarted",
     "",
     "indexingFinished",
     "count",
-    "indexingProgress"
+    "indexingProgress",
+    "searchFinished",
+    "QList<FileInfo>",
+    "results"
 };
 #undef QT_MOC_LITERAL
 } // unnamed namespace
@@ -61,22 +71,24 @@ Q_CONSTINIT static const uint qt_meta_data_FileEngine[] = {
       10,       // revision
        0,       // classname
        0,    0, // classinfo
-       3,   14, // methods
+       4,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-       3,       // signalCount
+       4,       // signalCount
 
  // signals: name, argc, parameters, tag, flags, initial metatype offsets
-       1,    0,   32,    2, 0x06,    1 /* Public */,
-       3,    1,   33,    2, 0x06,    2 /* Public */,
-       5,    1,   36,    2, 0x06,    4 /* Public */,
+       1,    0,   38,    2, 0x06,    1 /* Public */,
+       3,    1,   39,    2, 0x06,    2 /* Public */,
+       5,    1,   42,    2, 0x06,    4 /* Public */,
+       6,    1,   45,    2, 0x06,    6 /* Public */,
 
  // signals: parameters
     QMetaType::Void,
     QMetaType::Void, QMetaType::Int,    4,
     QMetaType::Void, QMetaType::Int,    4,
+    QMetaType::Void, 0x80000000 | 7,    8,
 
        0        // eod
 };
@@ -97,7 +109,10 @@ Q_CONSTINIT const QMetaObject FileEngine::staticMetaObject = { {
         QtPrivate::TypeAndForceComplete<int, std::false_type>,
         // method 'indexingProgress'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
-        QtPrivate::TypeAndForceComplete<int, std::false_type>
+        QtPrivate::TypeAndForceComplete<int, std::false_type>,
+        // method 'searchFinished'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        QtPrivate::TypeAndForceComplete<QVector<FileInfo>, std::false_type>
     >,
     nullptr
 } };
@@ -111,6 +126,7 @@ void FileEngine::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 0: _t->indexingStarted(); break;
         case 1: _t->indexingFinished((*reinterpret_cast< std::add_pointer_t<int>>(_a[1]))); break;
         case 2: _t->indexingProgress((*reinterpret_cast< std::add_pointer_t<int>>(_a[1]))); break;
+        case 3: _t->searchFinished((*reinterpret_cast< std::add_pointer_t<QList<FileInfo>>>(_a[1]))); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -136,6 +152,13 @@ void FileEngine::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
                 return;
             }
         }
+        {
+            using _t = void (FileEngine::*)(QVector<FileInfo> );
+            if (_t _q_method = &FileEngine::searchFinished; *reinterpret_cast<_t *>(_a[1]) == _q_method) {
+                *result = 3;
+                return;
+            }
+        }
     }
 }
 
@@ -158,13 +181,13 @@ int FileEngine::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 3)
+        if (_id < 4)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 3;
+        _id -= 4;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 3)
+        if (_id < 4)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 3;
+        _id -= 4;
     }
     return _id;
 }
@@ -187,6 +210,13 @@ void FileEngine::indexingProgress(int _t1)
 {
     void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(std::addressof(_t1))) };
     QMetaObject::activate(this, &staticMetaObject, 2, _a);
+}
+
+// SIGNAL 3
+void FileEngine::searchFinished(QVector<FileInfo> _t1)
+{
+    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(std::addressof(_t1))) };
+    QMetaObject::activate(this, &staticMetaObject, 3, _a);
 }
 QT_WARNING_POP
 QT_END_MOC_NAMESPACE

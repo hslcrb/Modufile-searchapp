@@ -69,7 +69,8 @@ void FileEngine::indexingTask() {
                 }
 
                 if (it->is_regular_file()) {
-                    newFiles.append({QString::fromStdString(it->path().filename().string()), path});
+                    QString name = QString::fromStdString(it->path().filename().string());
+                    newFiles.append({name, path, name.toLower()});
                     if (newFiles.size() % 10000 == 0) {
                         emit indexingProgress(newFiles.size());
                     }
@@ -95,47 +96,57 @@ void FileEngine::indexingTask() {
     emit indexingFinished(m_files.size());
 }
 
-int FileEngine::fuzzyScore(const QString &str, const QString &pattern) {
-    if (pattern.isEmpty()) return 0;
+int FileEngine::fuzzyScore(const QString &strLower, const QString &patternLower) {
+    if (patternLower.isEmpty()) return 0;
     
+    // Highly optimized fuzzy match score using pre-lowercased strings
     int score = 0;
     int run = 0;
+    
+    const int sLen = strLower.length();
+    const int pLen = patternLower.length();
+    
+    if (pLen > sLen) return 0;
+
     int strIdx = 0;
     int patIdx = 0;
 
-    // Use string views or raw data for speed if possible, but for now just optimize usage
-    const int sLen = str.length();
-    const int pLen = pattern.length();
-    
-    // Quick check
-    if (pLen > sLen) return 0;
+    // Bonus for starting match
+    if (strLower.startsWith(patternLower)) {
+        score += 50; 
+    }
 
-    QString s = str.toLower();
-    QString p = pattern.toLower();
-
+    // Matching
     while (strIdx < sLen && patIdx < pLen) {
-        if (s[strIdx] == p[patIdx]) {
-            score += 10 + (run * 5);
+        if (strLower[strIdx] == patternLower[patIdx]) {
+            int charScore = 10;
+            
+            // Consecutive match bonus (compounding)
+            if (run > 0) charScore += (run * 10);
+            
+            score += charScore;
             run++;
             patIdx++;
         } else {
             run = 0;
-            score -= 1;
+            score -= 1; // Small penalty for gaps
         }
         strIdx++;
     }
 
-    if (patIdx < pLen) return 0;
+    if (patIdx < pLen) return 0; // Incomplete match
+    
+    // Penalize long strings for short queries slightly to prefer exact matches
+    score -= (sLen - pLen); 
+
     return qMax(1, score);
 }
 
 void FileEngine::searchAsync(const QString &query, bool smartMatch) {
-    // Cancel any running search
     if (m_searchWatcher.isRunning()) {
         m_searchWatcher.cancel();
     }
 
-    // Run search in a background thread
     QFuture<QVector<FileInfo>> future = QtConcurrent::run([this, query, smartMatch]() {
         return this->search(query, smartMatch);
     });
@@ -147,7 +158,7 @@ QVector<FileInfo> FileEngine::search(const QString &query, bool smartMatch) {
     QVector<FileInfo> currentFiles;
     {
         QReadLocker locker(&m_lock);
-        currentFiles = m_files; // Copy nicely with CoW
+        currentFiles = m_files; 
     }
     
     QVector<FileInfo> results;
@@ -159,37 +170,31 @@ QVector<FileInfo> FileEngine::search(const QString &query, bool smartMatch) {
         return results;
     }
 
+    QString qLower = query.toLower();
+
     if (smartMatch) {
         struct Match {
             const FileInfo* info;
             int score;
         };
 
-        // Parallel processing using QtConcurrent::mapped or similar is possible, 
-        // but for simplicity and control we can use a parallel for loop idiom or just optimize the single loop first.
-        // Given we are already in a background thread (via searchAsync), we can just run this heavily.
-        
-        // Let's use OpenMP-like chunking if we really want speed, but standard loop is often fine if logic is simple.
-        // To strictly "not freeze UI", running in background thread is enough (which SearchAsync does).
-        
         std::vector<Match> matches;
         matches.reserve(qMin((int)currentFiles.size(), 20000));
 
-        // Use standard algorithms
+        // Use nameLower directly for massive speedup
         for (const auto& f : currentFiles) {
-            if (m_searchWatcher.isCanceled()) return {}; // Check cancellation
+            if (m_searchWatcher.isCanceled()) return {}; 
 
-            int score = fuzzyScore(f.name, query);
+            int score = fuzzyScore(f.nameLower, qLower);
             if (score > 0) {
                 matches.push_back({&f, score});
-                if (matches.size() > 50000) break; // Hard limit to prevent memory explosion
+                if (matches.size() > 50000) break;
             }
         }
 
-        // Sort efficiently
         std::sort(matches.begin(), matches.end(), [](const Match& a, const Match& b) {
             if (a.score != b.score) return a.score > b.score;
-            return a.info->name.length() < b.info->name.length();
+            return a.info->nameLower.length() < b.info->nameLower.length();
         });
 
         int limit = qMin(200, (int)matches.size());
@@ -197,11 +202,11 @@ QVector<FileInfo> FileEngine::search(const QString &query, bool smartMatch) {
             results.append(*matches[i].info);
         }
     } else {
-        QString q = query.toLower();
+        // Simple contains check
         for (const auto& f : currentFiles) {
             if (m_searchWatcher.isCanceled()) return {};
 
-            if (f.name.toLower().contains(q)) {
+            if (f.nameLower.contains(qLower)) {
                 results.append(f);
                 if (results.size() >= 200) break;
             }

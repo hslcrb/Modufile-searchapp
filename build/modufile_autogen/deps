@@ -3,6 +3,7 @@ modufile_autogen/timestamp: \
 	/home/rheehose/문서/rheeworks_py/Modufileapp/build/CMakeFiles/3.28.3/CMakeCXXCompiler.cmake \
 	/home/rheehose/문서/rheeworks_py/Modufileapp/build/CMakeFiles/3.28.3/CMakeSystem.cmake \
 	/home/rheehose/문서/rheeworks_py/Modufileapp/build/modufile_autogen/moc_predefs.h \
+	/home/rheehose/문서/rheeworks_py/Modufileapp/resources.qrc \
 	/home/rheehose/문서/rheeworks_py/Modufileapp/src/fileengine.cpp \
 	/home/rheehose/문서/rheeworks_py/Modufileapp/src/fileengine.h \
 	/home/rheehose/문서/rheeworks_py/Modufileapp/src/main.cpp \

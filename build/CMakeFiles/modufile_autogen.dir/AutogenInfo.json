@@ -183,7 +183,8 @@
 		"/usr/lib/x86_64-linux-gnu/cmake/Qt6Concurrent/Qt6ConcurrentTargets.cmake",
 		"/usr/lib/x86_64-linux-gnu/cmake/Qt6Concurrent/Qt6ConcurrentTargets-none.cmake",
 		"/usr/lib/x86_64-linux-gnu/cmake/Qt6Concurrent/Qt6ConcurrentAdditionalTargetInfo.cmake",
-		"/usr/lib/x86_64-linux-gnu/cmake/Qt6Concurrent/Qt6ConcurrentVersionlessTargets.cmake"
+		"/usr/lib/x86_64-linux-gnu/cmake/Qt6Concurrent/Qt6ConcurrentVersionlessTargets.cmake",
+		"/home/rheehose/\ubb38\uc11c/rheeworks_py/Modufileapp/resources.qrc"
 	],
 	"CMAKE_SOURCE_DIR" : "/home/rheehose/\ubb38\uc11c/rheeworks_py/Modufileapp",
 	"DEP_FILE" : "/home/rheehose/\ubb38\uc11c/rheeworks_py/Modufileapp/build/modufile_autogen/deps",
