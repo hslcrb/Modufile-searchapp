@@ -49,9 +49,9 @@ jobs:
         zip -j modufile-linux.zip build/modufile
 
     - name: Prepare Artifacts (macOS)
-      if: runner.os == 'MacOS'
+      if: runner.os == 'macOS'
       run: |
-        zip -r modufile-macos.zip build/modufile.app
+        zip -r modufile-macos.zip build/*.app
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4

@@ -15,6 +15,8 @@ file(GLOB_RECURSE HEADERS "src/*.h")
 
 if(WIN32)
     add_executable(modufile WIN32 ${SOURCES} ${HEADERS})
+elseif(APPLE)
+    add_executable(modufile MACOSX_BUNDLE ${SOURCES} ${HEADERS})
 else()
     add_executable(modufile ${SOURCES} ${HEADERS})
 endif()
