@@ -132,7 +132,7 @@ int main() {
     w.set_size(800, 600, WEBVIEW_HINT_NONE);
 
     // Bind: Refresh Index
-    w.bind("refresh_index", [&](const std::string& seq, const std::string& req, void* arg) {
+    w.bind("refresh_index", [&](std::string seq, std::string req, void* arg) {
         std::thread([&, seq]() {
             refresh_index_impl();
             size_t count = 0;
@@ -142,10 +142,10 @@ int main() {
             }
             w.resolve(seq, 0, std::to_string(count));
         }).detach();
-    });
+    }, nullptr);
 
     // Bind: Search
-    w.bind("search", [&](const std::string& seq, const std::string& req, void* arg) {
+    w.bind("search", [&](std::string seq, std::string req, void* arg) {
         // req is JSON array like ["query", true/false] but webview binding might pass it differently depending on JS.
         // Actually webview library passes the argument string as is. 
         // We'll parse it simply or assume structure. 
@@ -230,10 +230,10 @@ int main() {
         json << "]";
 
         w.resolve(seq, 0, json.str());
-    });
+    }, nullptr);
 
     // Bind: Open File
-    w.bind("open_file", [&](const std::string& seq, const std::string& req, void* arg) {
+    w.bind("open_file", [&](std::string seq, std::string req, void* arg) {
          std::string path;
          size_t p_pos = req.find("\"path\":\"");
          if (p_pos != std::string::npos) {
@@ -250,7 +250,7 @@ int main() {
          #endif
          
          w.resolve(seq, 0, "null");
-    });
+    }, nullptr);
 
     // Load HTML
     // For development, serving from local file system. 
