@@ -31,8 +31,15 @@ void FileEngine::refreshIndex() {
 }
 
 void FileEngine::indexingTask() {
-    QVector<FileInfo> newFiles;
-    newFiles.reserve(1000000);
+    // Clear existing index at start
+    {
+        QWriteLocker locker(&m_lock);
+        m_files.clear();
+        m_files.reserve(1000000); 
+    }
+
+    QVector<FileInfo> chunk;
+    chunk.reserve(5000);
 
     QStringList skipDirs;
 #ifdef Q_OS_WIN
@@ -70,14 +77,20 @@ void FileEngine::indexingTask() {
 
                 if (it->is_regular_file()) {
                     QString name = QString::fromStdString(it->path().filename().string());
-                    newFiles.append({name, path, name.toLower()});
-                    if (newFiles.size() % 10000 == 0) {
-                        emit indexingProgress(newFiles.size());
+                    chunk.append({name, path, name.toLower()});
+                    
+                    // Commit chunk every 5000 files
+                    if (chunk.size() >= 5000) {
+                        {
+                            QWriteLocker locker(&m_lock);
+                            m_files.append(chunk);
+                        }
+                        emit indexingProgress(m_files.size());
+                        chunk.clear();
                     }
                 }
                 ++it;
             } catch (const std::exception& e) {
-                // qDebug() << "접근 오류 건너뜀: " << e.what();
                 try { ++it; } catch (...) { break; }
             } catch (...) {
                 try { ++it; } catch (...) { break; }
@@ -87,10 +100,12 @@ void FileEngine::indexingTask() {
         qDebug() << "치명적 인덱싱 오류: " << e.what();
     }
 
-    {
+    // Append remaining files
+    if (!chunk.isEmpty()) {
         QWriteLocker locker(&m_lock);
-        m_files = std::move(newFiles);
+        m_files.append(chunk);
     }
+
     m_isIndexing = false;
     qDebug() << "인덱싱 완료. 총 파일 수: " << m_files.size();
     emit indexingFinished(m_files.size());

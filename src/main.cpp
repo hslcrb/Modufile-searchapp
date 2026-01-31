@@ -197,6 +197,11 @@ void MainWindow::onIndexingStarted() {
 
 void MainWindow::onIndexingProgress(int count) {
     m_statusLabel->setText(QString("indexing %1").arg(count));
+    
+    // Auto-refresh search results if user is waiting
+    if (!m_searchInput->text().isEmpty()) {
+        performSearch();
+    }
 }
 
 void MainWindow::onIndexingFinished(int count) {
