@@ -8,7 +8,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets Core Gui)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Core Gui Concurrent)
 
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 file(GLOB_RECURSE HEADERS "src/*.h")
@@ -26,7 +26,7 @@ else()
     add_executable(modufile src/main.cpp ${SOURCES} ${HEADERS})
 endif()
 
-target_link_libraries(modufile PRIVATE Qt6::Widgets Qt6::Core Qt6::Gui)
+target_link_libraries(modufile PRIVATE Qt6::Widgets Qt6::Core Qt6::Gui Qt6::Concurrent)
 
 if(WIN32)
     set_target_properties(modufile PROPERTIES WIN32_EXECUTABLE ON)
@@ -41,6 +41,6 @@ set(CLI_HEADERS ${HEADERS})
 list(FILTER CLI_HEADERS EXCLUDE REGEX ".*mainwindow.*")
 
 add_executable(modufile-cli src/cli_main.cpp ${CLI_SOURCES} ${CLI_HEADERS})
-target_link_libraries(modufile-cli PRIVATE Qt6::Widgets Qt6::Core Qt6::Gui) 
+target_link_libraries(modufile-cli PRIVATE Qt6::Widgets Qt6::Core Qt6::Gui Qt6::Concurrent) 
 
 install(TARGETS modufile modufile-cli DESTINATION bin)

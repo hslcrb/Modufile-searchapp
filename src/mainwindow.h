@@ -24,6 +24,7 @@ private slots:
     void onIndexingStarted();
     void onIndexingProgress(int count);
     void onIndexingFinished(int count);
+    void onSearchFinished(QVector<FileInfo> results);
     void onItemActivated(QListWidgetItem *item);
     void onSmartMatchToggled(bool checked);
 

@@ -175,6 +175,19 @@ modufile/fast:
 .PHONY : modufile/fast
 
 #=============================================================================
+# Target rules for targets named modufile-cli
+
+# Build rule for target.
+modufile-cli: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 modufile-cli
+.PHONY : modufile-cli
+
+# fast build rule for target.
+modufile-cli/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modufile-cli.dir/build.make CMakeFiles/modufile-cli.dir/build
+.PHONY : modufile-cli/fast
+
+#=============================================================================
 # Target rules for targets named modufile_autogen_timestamp_deps
 
 # Build rule for target.
@@ -200,6 +213,56 @@ modufile_autogen/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/modufile_autogen.dir/build.make CMakeFiles/modufile_autogen.dir/build
 .PHONY : modufile_autogen/fast
 
+#=============================================================================
+# Target rules for targets named modufile-cli_autogen_timestamp_deps
+
+# Build rule for target.
+modufile-cli_autogen_timestamp_deps: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 modufile-cli_autogen_timestamp_deps
+.PHONY : modufile-cli_autogen_timestamp_deps
+
+# fast build rule for target.
+modufile-cli_autogen_timestamp_deps/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modufile-cli_autogen_timestamp_deps.dir/build.make CMakeFiles/modufile-cli_autogen_timestamp_deps.dir/build
+.PHONY : modufile-cli_autogen_timestamp_deps/fast
+
+#=============================================================================
+# Target rules for targets named modufile-cli_autogen
+
+# Build rule for target.
+modufile-cli_autogen: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 modufile-cli_autogen
+.PHONY : modufile-cli_autogen
+
+# fast build rule for target.
+modufile-cli_autogen/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modufile-cli_autogen.dir/build.make CMakeFiles/modufile-cli_autogen.dir/build
+.PHONY : modufile-cli_autogen/fast
+
+modufile-cli_autogen/mocs_compilation.o: modufile-cli_autogen/mocs_compilation.cpp.o
+.PHONY : modufile-cli_autogen/mocs_compilation.o
+
+# target to build an object file
+modufile-cli_autogen/mocs_compilation.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modufile-cli.dir/build.make CMakeFiles/modufile-cli.dir/modufile-cli_autogen/mocs_compilation.cpp.o
+.PHONY : modufile-cli_autogen/mocs_compilation.cpp.o
+
+modufile-cli_autogen/mocs_compilation.i: modufile-cli_autogen/mocs_compilation.cpp.i
+.PHONY : modufile-cli_autogen/mocs_compilation.i
+
+# target to preprocess a source file
+modufile-cli_autogen/mocs_compilation.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modufile-cli.dir/build.make CMakeFiles/modufile-cli.dir/modufile-cli_autogen/mocs_compilation.cpp.i
+.PHONY : modufile-cli_autogen/mocs_compilation.cpp.i
+
+modufile-cli_autogen/mocs_compilation.s: modufile-cli_autogen/mocs_compilation.cpp.s
+.PHONY : modufile-cli_autogen/mocs_compilation.s
+
+# target to generate assembly for a file
+modufile-cli_autogen/mocs_compilation.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modufile-cli.dir/build.make CMakeFiles/modufile-cli.dir/modufile-cli_autogen/mocs_compilation.cpp.s
+.PHONY : modufile-cli_autogen/mocs_compilation.cpp.s
+
 modufile_autogen/mocs_compilation.o: modufile_autogen/mocs_compilation.cpp.o
 .PHONY : modufile_autogen/mocs_compilation.o
 
@@ -224,12 +287,37 @@ modufile_autogen/mocs_compilation.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/modufile.dir/build.make CMakeFiles/modufile.dir/modufile_autogen/mocs_compilation.cpp.s
 .PHONY : modufile_autogen/mocs_compilation.cpp.s
 
+src/cli_main.o: src/cli_main.cpp.o
+.PHONY : src/cli_main.o
+
+# target to build an object file
+src/cli_main.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modufile-cli.dir/build.make CMakeFiles/modufile-cli.dir/src/cli_main.cpp.o
+.PHONY : src/cli_main.cpp.o
+
+src/cli_main.i: src/cli_main.cpp.i
+.PHONY : src/cli_main.i
+
+# target to preprocess a source file
+src/cli_main.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modufile-cli.dir/build.make CMakeFiles/modufile-cli.dir/src/cli_main.cpp.i
+.PHONY : src/cli_main.cpp.i
+
+src/cli_main.s: src/cli_main.cpp.s
+.PHONY : src/cli_main.s
+
+# target to generate assembly for a file
+src/cli_main.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modufile-cli.dir/build.make CMakeFiles/modufile-cli.dir/src/cli_main.cpp.s
+.PHONY : src/cli_main.cpp.s
+
 src/fileengine.o: src/fileengine.cpp.o
 .PHONY : src/fileengine.o
 
 # target to build an object file
 src/fileengine.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/modufile.dir/build.make CMakeFiles/modufile.dir/src/fileengine.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modufile-cli.dir/build.make CMakeFiles/modufile-cli.dir/src/fileengine.cpp.o
 .PHONY : src/fileengine.cpp.o
 
 src/fileengine.i: src/fileengine.cpp.i
@@ -238,6 +326,7 @@ src/fileengine.i: src/fileengine.cpp.i
 # target to preprocess a source file
 src/fileengine.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/modufile.dir/build.make CMakeFiles/modufile.dir/src/fileengine.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modufile-cli.dir/build.make CMakeFiles/modufile-cli.dir/src/fileengine.cpp.i
 .PHONY : src/fileengine.cpp.i
 
 src/fileengine.s: src/fileengine.cpp.s
@@ -246,6 +335,7 @@ src/fileengine.s: src/fileengine.cpp.s
 # target to generate assembly for a file
 src/fileengine.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/modufile.dir/build.make CMakeFiles/modufile.dir/src/fileengine.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/modufile-cli.dir/build.make CMakeFiles/modufile-cli.dir/src/fileengine.cpp.s
 .PHONY : src/fileengine.cpp.s
 
 src/main.o: src/main.cpp.o
@@ -284,12 +374,21 @@ help:
 	@echo "... install/strip"
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
+	@echo "... modufile-cli_autogen"
+	@echo "... modufile-cli_autogen_timestamp_deps"
 	@echo "... modufile_autogen"
 	@echo "... modufile_autogen_timestamp_deps"
 	@echo "... modufile"
+	@echo "... modufile-cli"
+	@echo "... modufile-cli_autogen/mocs_compilation.o"
+	@echo "... modufile-cli_autogen/mocs_compilation.i"
+	@echo "... modufile-cli_autogen/mocs_compilation.s"
 	@echo "... modufile_autogen/mocs_compilation.o"
 	@echo "... modufile_autogen/mocs_compilation.i"
 	@echo "... modufile_autogen/mocs_compilation.s"
+	@echo "... src/cli_main.o"
+	@echo "... src/cli_main.i"
+	@echo "... src/cli_main.s"
 	@echo "... src/fileengine.o"
 	@echo "... src/fileengine.i"
 	@echo "... src/fileengine.s"

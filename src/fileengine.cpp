@@ -6,9 +6,17 @@
 
 namespace fs = std::filesystem;
 
-FileEngine::FileEngine(QObject *parent) : QObject(parent) {}
+FileEngine::FileEngine(QObject *parent) : QObject(parent) {
+    connect(&m_searchWatcher, &QFutureWatcher<QVector<FileInfo>>::finished, this, [this]() {
+        emit searchFinished(m_searchWatcher.result());
+    });
+}
 
-FileEngine::~FileEngine() {}
+FileEngine::~FileEngine() {
+    if (m_searchWatcher.isRunning()) {
+        m_searchWatcher.waitForFinished();
+    }
+}
 
 FileEngine& FileEngine::instance() {
     static FileEngine inst;
@@ -68,7 +76,7 @@ void FileEngine::indexingTask() {
                 }
                 ++it;
             } catch (const std::exception& e) {
-                qDebug() << "접근 오류 건너뜀: " << e.what();
+                // qDebug() << "접근 오류 건너뜀: " << e.what();
                 try { ++it; } catch (...) { break; }
             } catch (...) {
                 try { ++it; } catch (...) { break; }
@@ -95,10 +103,17 @@ int FileEngine::fuzzyScore(const QString &str, const QString &pattern) {
     int strIdx = 0;
     int patIdx = 0;
 
+    // Use string views or raw data for speed if possible, but for now just optimize usage
+    const int sLen = str.length();
+    const int pLen = pattern.length();
+    
+    // Quick check
+    if (pLen > sLen) return 0;
+
     QString s = str.toLower();
     QString p = pattern.toLower();
 
-    while (strIdx < s.length() && patIdx < p.length()) {
+    while (strIdx < sLen && patIdx < pLen) {
         if (s[strIdx] == p[patIdx]) {
             score += 10 + (run * 5);
             run++;
@@ -110,18 +125,36 @@ int FileEngine::fuzzyScore(const QString &str, const QString &pattern) {
         strIdx++;
     }
 
-    if (patIdx < p.length()) return 0;
+    if (patIdx < pLen) return 0;
     return qMax(1, score);
 }
 
-QVector<FileInfo> FileEngine::search(const QString &query, bool smartMatch) {
-    QReadLocker locker(&m_lock);
-    QVector<FileInfo> results;
+void FileEngine::searchAsync(const QString &query, bool smartMatch) {
+    // Cancel any running search
+    if (m_searchWatcher.isRunning()) {
+        m_searchWatcher.cancel();
+    }
 
+    // Run search in a background thread
+    QFuture<QVector<FileInfo>> future = QtConcurrent::run([this, query, smartMatch]() {
+        return this->search(query, smartMatch);
+    });
+    
+    m_searchWatcher.setFuture(future);
+}
+
+QVector<FileInfo> FileEngine::search(const QString &query, bool smartMatch) {
+    QVector<FileInfo> currentFiles;
+    {
+        QReadLocker locker(&m_lock);
+        currentFiles = m_files; // Copy nicely with CoW
+    }
+    
+    QVector<FileInfo> results;
     if (query.isEmpty()) {
-        int limit = qMin(100, (int)m_files.size());
+        int limit = qMin(100, (int)currentFiles.size());
         for (int i = 0; i < limit; ++i) {
-            results.append(m_files[i]);
+            results.append(currentFiles[i]);
         }
         return results;
     }
@@ -131,17 +164,29 @@ QVector<FileInfo> FileEngine::search(const QString &query, bool smartMatch) {
             const FileInfo* info;
             int score;
         };
-        std::vector<Match> matches;
-        matches.reserve(qMin((int)m_files.size(), 10000));
 
-        for (const auto& f : m_files) {
+        // Parallel processing using QtConcurrent::mapped or similar is possible, 
+        // but for simplicity and control we can use a parallel for loop idiom or just optimize the single loop first.
+        // Given we are already in a background thread (via searchAsync), we can just run this heavily.
+        
+        // Let's use OpenMP-like chunking if we really want speed, but standard loop is often fine if logic is simple.
+        // To strictly "not freeze UI", running in background thread is enough (which SearchAsync does).
+        
+        std::vector<Match> matches;
+        matches.reserve(qMin((int)currentFiles.size(), 20000));
+
+        // Use standard algorithms
+        for (const auto& f : currentFiles) {
+            if (m_searchWatcher.isCanceled()) return {}; // Check cancellation
+
             int score = fuzzyScore(f.name, query);
             if (score > 0) {
                 matches.push_back({&f, score});
-                if (matches.size() > 50000) break;
+                if (matches.size() > 50000) break; // Hard limit to prevent memory explosion
             }
         }
 
+        // Sort efficiently
         std::sort(matches.begin(), matches.end(), [](const Match& a, const Match& b) {
             if (a.score != b.score) return a.score > b.score;
             return a.info->name.length() < b.info->name.length();
@@ -153,7 +198,9 @@ QVector<FileInfo> FileEngine::search(const QString &query, bool smartMatch) {
         }
     } else {
         QString q = query.toLower();
-        for (const auto& f : m_files) {
+        for (const auto& f : currentFiles) {
+            if (m_searchWatcher.isCanceled()) return {};
+
             if (f.name.toLower().contains(q)) {
                 results.append(f);
                 if (results.size() >= 200) break;

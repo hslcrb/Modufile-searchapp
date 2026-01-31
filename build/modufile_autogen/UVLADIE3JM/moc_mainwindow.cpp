@@ -10,6 +10,7 @@
 #include "../../../src/mainwindow.h"
 #include <QtGui/qtextcursor.h>
 #include <QtCore/qmetatype.h>
+#include <QtCore/QList>
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'mainwindow.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 68
@@ -27,7 +28,7 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 namespace {
 struct qt_meta_stringdata_MainWindow_t {
-    uint offsetsAndSizes[26];
+    uint offsetsAndSizes[34];
     char stringdata0[11];
     char stringdata1[20];
     char stringdata2[1];
@@ -36,11 +37,15 @@ struct qt_meta_stringdata_MainWindow_t {
     char stringdata5[18];
     char stringdata6[19];
     char stringdata7[6];
-    char stringdata8[16];
+    char stringdata8[19];
     char stringdata9[17];
-    char stringdata10[5];
-    char stringdata11[20];
-    char stringdata12[8];
+    char stringdata10[16];
+    char stringdata11[8];
+    char stringdata12[16];
+    char stringdata13[17];
+    char stringdata14[5];
+    char stringdata15[20];
+    char stringdata16[8];
 };
 #define QT_MOC_LITERAL(ofs, len) \
     uint(sizeof(qt_meta_stringdata_MainWindow_t::offsetsAndSizes) + ofs), len 
@@ -52,13 +57,17 @@ Q_CONSTINIT static const qt_meta_stringdata_MainWindow_t qt_meta_stringdata_Main
         QT_MOC_LITERAL(32, 4),  // "text"
         QT_MOC_LITERAL(37, 16),  // "onRefreshClicked"
         QT_MOC_LITERAL(54, 17),  // "onIndexingStarted"
-        QT_MOC_LITERAL(72, 18),  // "onIndexingFinished"
+        QT_MOC_LITERAL(72, 18),  // "onIndexingProgress"
         QT_MOC_LITERAL(91, 5),  // "count"
-        QT_MOC_LITERAL(97, 15),  // "onItemActivated"
-        QT_MOC_LITERAL(113, 16),  // "QListWidgetItem*"
-        QT_MOC_LITERAL(130, 4),  // "item"
-        QT_MOC_LITERAL(135, 19),  // "onSmartMatchToggled"
-        QT_MOC_LITERAL(155, 7)   // "checked"
+        QT_MOC_LITERAL(97, 18),  // "onIndexingFinished"
+        QT_MOC_LITERAL(116, 16),  // "onSearchFinished"
+        QT_MOC_LITERAL(133, 15),  // "QList<FileInfo>"
+        QT_MOC_LITERAL(149, 7),  // "results"
+        QT_MOC_LITERAL(157, 15),  // "onItemActivated"
+        QT_MOC_LITERAL(173, 16),  // "QListWidgetItem*"
+        QT_MOC_LITERAL(190, 4),  // "item"
+        QT_MOC_LITERAL(195, 19),  // "onSmartMatchToggled"
+        QT_MOC_LITERAL(215, 7)   // "checked"
     },
     "MainWindow",
     "onSearchTextChanged",
@@ -66,8 +75,12 @@ Q_CONSTINIT static const qt_meta_stringdata_MainWindow_t qt_meta_stringdata_Main
     "text",
     "onRefreshClicked",
     "onIndexingStarted",
-    "onIndexingFinished",
+    "onIndexingProgress",
     "count",
+    "onIndexingFinished",
+    "onSearchFinished",
+    "QList<FileInfo>",
+    "results",
     "onItemActivated",
     "QListWidgetItem*",
     "item",
@@ -83,7 +96,7 @@ Q_CONSTINIT static const uint qt_meta_data_MainWindow[] = {
       10,       // revision
        0,       // classname
        0,    0, // classinfo
-       6,   14, // methods
+       8,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -91,20 +104,24 @@ Q_CONSTINIT static const uint qt_meta_data_MainWindow[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags, initial metatype offsets
-       1,    1,   50,    2, 0x08,    1 /* Private */,
-       4,    0,   53,    2, 0x08,    3 /* Private */,
-       5,    0,   54,    2, 0x08,    4 /* Private */,
-       6,    1,   55,    2, 0x08,    5 /* Private */,
-       8,    1,   58,    2, 0x08,    7 /* Private */,
-      11,    1,   61,    2, 0x08,    9 /* Private */,
+       1,    1,   62,    2, 0x08,    1 /* Private */,
+       4,    0,   65,    2, 0x08,    3 /* Private */,
+       5,    0,   66,    2, 0x08,    4 /* Private */,
+       6,    1,   67,    2, 0x08,    5 /* Private */,
+       8,    1,   70,    2, 0x08,    7 /* Private */,
+       9,    1,   73,    2, 0x08,    9 /* Private */,
+      12,    1,   76,    2, 0x08,   11 /* Private */,
+      15,    1,   79,    2, 0x08,   13 /* Private */,
 
  // slots: parameters
     QMetaType::Void, QMetaType::QString,    3,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void, QMetaType::Int,    7,
-    QMetaType::Void, 0x80000000 | 9,   10,
-    QMetaType::Void, QMetaType::Bool,   12,
+    QMetaType::Void, QMetaType::Int,    7,
+    QMetaType::Void, 0x80000000 | 10,   11,
+    QMetaType::Void, 0x80000000 | 13,   14,
+    QMetaType::Void, QMetaType::Bool,   16,
 
        0        // eod
 };
@@ -125,9 +142,15 @@ Q_CONSTINIT const QMetaObject MainWindow::staticMetaObject = { {
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
         // method 'onIndexingStarted'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        // method 'onIndexingProgress'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        QtPrivate::TypeAndForceComplete<int, std::false_type>,
         // method 'onIndexingFinished'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
         QtPrivate::TypeAndForceComplete<int, std::false_type>,
+        // method 'onSearchFinished'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>,
+        QtPrivate::TypeAndForceComplete<QVector<FileInfo>, std::false_type>,
         // method 'onItemActivated'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
         QtPrivate::TypeAndForceComplete<QListWidgetItem *, std::false_type>,
@@ -147,9 +170,11 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 0: _t->onSearchTextChanged((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
         case 1: _t->onRefreshClicked(); break;
         case 2: _t->onIndexingStarted(); break;
-        case 3: _t->onIndexingFinished((*reinterpret_cast< std::add_pointer_t<int>>(_a[1]))); break;
-        case 4: _t->onItemActivated((*reinterpret_cast< std::add_pointer_t<QListWidgetItem*>>(_a[1]))); break;
-        case 5: _t->onSmartMatchToggled((*reinterpret_cast< std::add_pointer_t<bool>>(_a[1]))); break;
+        case 3: _t->onIndexingProgress((*reinterpret_cast< std::add_pointer_t<int>>(_a[1]))); break;
+        case 4: _t->onIndexingFinished((*reinterpret_cast< std::add_pointer_t<int>>(_a[1]))); break;
+        case 5: _t->onSearchFinished((*reinterpret_cast< std::add_pointer_t<QList<FileInfo>>>(_a[1]))); break;
+        case 6: _t->onItemActivated((*reinterpret_cast< std::add_pointer_t<QListWidgetItem*>>(_a[1]))); break;
+        case 7: _t->onSmartMatchToggled((*reinterpret_cast< std::add_pointer_t<bool>>(_a[1]))); break;
         default: ;
         }
     }
@@ -174,13 +199,13 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 6)
+        if (_id < 8)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 6;
+        _id -= 8;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 6)
+        if (_id < 8)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 6;
+        _id -= 8;
     }
     return _id;
 }

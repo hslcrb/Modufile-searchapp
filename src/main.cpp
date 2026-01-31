@@ -98,6 +98,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&FileEngine::instance(), &FileEngine::indexingProgress, this, &MainWindow::onIndexingProgress);
     connect(&FileEngine::instance(), &FileEngine::indexingFinished, this, &MainWindow::onIndexingFinished);
     
+    // Async Search Connection
+    connect(&FileEngine::instance(), &FileEngine::searchFinished, this, &MainWindow::onSearchFinished);
+    
     // Auto-refresh on start
     QTimer::singleShot(200, this, &MainWindow::onRefreshClicked);
 }
@@ -113,10 +116,22 @@ void MainWindow::onSmartMatchToggled(bool) {
 }
 
 void MainWindow::performSearch() {
-    m_resultsList->clear();
-    m_currentResults = FileEngine::instance().search(m_searchInput->text(), m_smartMatchCheck->isChecked());
+    // Show searching status
+    m_statusLabel->setText("검색 중...");
     
-    for (const auto &f : m_currentResults) {
+    // Trigger async search
+    FileEngine::instance().searchAsync(m_searchInput->text(), m_smartMatchCheck->isChecked());
+}
+
+void MainWindow::onSearchFinished(QVector<FileInfo> results) {
+    m_resultsList->clear();
+    m_currentResults = results;
+    
+    // Use a limit to prevent UI lag on huge result sets if somehow returned
+    int limit = qMin(results.size(), 200); 
+
+    for (int i = 0; i < limit; ++i) {
+        const auto& f = results[i];
         QListWidgetItem *item = new QListWidgetItem(m_resultsList);
         item->setSizeHint(QSize(0, 60)); 
         m_resultsList->addItem(item);
