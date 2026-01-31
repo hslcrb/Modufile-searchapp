@@ -48,5 +48,6 @@ private:
     std::atomic<bool> m_isIndexing{false};
     
     QFutureWatcher<QVector<FileInfo>> m_searchWatcher;
+};
 
 #endif // FILEENGINE_H
