@@ -1,108 +1,110 @@
-#include <wx/wx.h>
-#include <wx/listctrl.h>
-#include "FileEngine.h"
+#include "mainwindow.h"
+#include <QApplication>
+#include <QHeaderView>
+#include <QTimer>
 
-class ModufileFrame : public wxFrame {
-public:
-    ModufileFrame() : wxFrame(NULL, wxID_ANY, "Modufile", wxDefaultPosition, wxSize(800, 600)) {
-        wxPanel* panel = new wxPanel(this);
-        wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent) {
+    setWindowTitle("모두파일 (Modufile) - Native C++ Edition");
+    resize(800, 600);
 
-        // Header
-        wxBoxSizer* hbox1 = new wxBoxSizer(wxHORIZONTAL);
-        m_searchCtrl = new wxTextCtrl(panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-        m_searchCtrl->SetHint("Search files...");
-        
-        m_smartMatchCheck = new wxCheckBox(panel, wxID_ANY, "Smart Match (Al-Jal-Ttak)");
-        m_refreshBtn = new wxButton(panel, wxID_ANY, "Refresh Index");
-        
-        hbox1->Add(m_searchCtrl, 1, wxEXPAND | wxRIGHT, 8);
-        hbox1->Add(m_smartMatchCheck, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
-        hbox1->Add(m_refreshBtn, 0, wxALIGN_CENTER_VERTICAL);
-        
-        vbox->Add(hbox1, 0, wxEXPAND | wxALL, 10);
+    QWidget *centralWidget = new QWidget(this);
+    setCentralWidget(centralWidget);
 
-        // Status
-        m_statusText = new wxStaticText(panel, wxID_ANY, "Ready");
-        vbox->Add(m_statusText, 0, wxLEFT | wxBOTTOM, 10);
+    QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
+    mainLayout->setContentsMargins(15, 15, 15, 15);
+    mainLayout->setSpacing(10);
 
-        // List
-        m_listCtrl = new wxListView(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_SINGLE_SEL);
-        m_listCtrl->AppendColumn("Name", wxLIST_FORMAT_LEFT, 200);
-        m_listCtrl->AppendColumn("Path", wxLIST_FORMAT_LEFT, 550);
-        
-        vbox->Add(m_listCtrl, 1, wxEXPAND | wxALL, 10);
-
-        panel->SetSizer(vbox);
-
-        // Events
-        m_searchCtrl->Bind(wxEVT_TEXT, &ModufileFrame::OnSearch, this);
-        m_smartMatchCheck->Bind(wxEVT_CHECKBOX, &ModufileFrame::OnSearch, this);
-        m_refreshBtn->Bind(wxEVT_BUTTON, &ModufileFrame::OnRefresh, this);
-        m_listCtrl->Bind(wxEVT_LIST_ITEM_ACTIVATED, &ModufileFrame::OnItemActivated, this);
-
-        // Initial Refresh
-        OnRefresh(wxCommandEvent());
-    }
-
-private:
-    wxTextCtrl* m_searchCtrl;
-    wxCheckBox* m_smartMatchCheck;
-    wxButton* m_refreshBtn;
-    wxStaticText* m_statusText;
-    wxListView* m_listCtrl;
+    // Header
+    QHBoxLayout *headerLayout = new QHBoxLayout();
+    m_searchInput = new QLineEdit();
+    m_searchInput->setPlaceholderText("Search files...");
+    m_searchInput->setStyleSheet("padding: 8px; font-size: 14px; border-radius: 4px; border: 1px solid #ccc;");
     
-    std::vector<FileInfo> m_currentResults;
+    m_smartMatchCheck = new QCheckBox("Smart Match (Al-Jal-Ttak)");
+    m_smartMatchCheck->setChecked(true);
+    
+    m_refreshBtn = new QPushButton("Refresh Index");
+    m_refreshBtn->setStyleSheet("padding: 8px 15px; background-color: #a855f7; color: white; border-radius: 4px; font-weight: bold;");
 
-    void OnSearch(wxCommandEvent& event) {
-        std::string query = m_searchCtrl->GetValue().ToStdString();
-        bool smart = m_smartMatchCheck->IsChecked();
-        
-        m_currentResults = FileEngine::Get().Search(query, smart);
-        UpdateList();
-        
-        m_statusText->SetLabel(wxString::Format("Found: %zu files", m_currentResults.size()));
+    headerLayout->addWidget(m_searchInput, 1);
+    headerLayout->addWidget(m_smartMatchCheck);
+    headerLayout->addWidget(m_refreshBtn);
+    mainLayout->addLayout(headerLayout);
+
+    // Status
+    m_statusLabel = new QLabel("Waiting...");
+    m_statusLabel->setStyleSheet("color: #666; font-style: italic;");
+    mainLayout->addWidget(m_statusLabel);
+
+    // List
+    m_resultsList = new QListWidget();
+    m_resultsList->setStyleSheet("QListWidget { border: 1px solid #eee; border-radius: 4px; background: white; }"
+                                 "QListWidget::item { padding: 10px; border-bottom: 1px solid #f9f9f9; }"
+                                 "QListWidget::item:selected { background: #f3e8ff; color: #7e22ce; }");
+    mainLayout->addWidget(m_resultsList, 1);
+
+    // Signal connections
+    connect(m_searchInput, &QLineEdit::textChanged, this, &MainWindow::onSearchTextChanged);
+    connect(m_smartMatchCheck, &QCheckBox::toggled, this, &MainWindow::onSmartMatchToggled);
+    connect(m_refreshBtn, &QPushButton::clicked, this, &MainWindow::onRefreshClicked);
+    connect(m_resultsList, &QListWidget::itemActivated, this, &MainWindow::onItemActivated);
+
+    connect(&FileEngine::instance(), &FileEngine::indexingStarted, this, &MainWindow::onIndexingStarted);
+    connect(&FileEngine::instance(), &FileEngine::indexingFinished, this, &MainWindow::onIndexingFinished);
+    
+    // Initial indexing
+    QTimer::singleShot(500, this, &MainWindow::onRefreshClicked);
+}
+
+MainWindow::~MainWindow() {}
+
+void MainWindow::onSearchTextChanged(const QString &) {
+    performSearch();
+}
+
+void MainWindow::onSmartMatchToggled(bool) {
+    performSearch();
+}
+
+void MainWindow::performSearch() {
+    m_currentResults = FileEngine::instance().search(m_searchInput->text(), m_smartMatchCheck->isChecked());
+    updateList(m_currentResults);
+    m_statusLabel->setText(QString("Found %1 results").arg(m_currentResults.size()));
+}
+
+void MainWindow::updateList(const QVector<FileInfo> &results) {
+    m_resultsList->clear();
+    for (const auto &f : results) {
+        QListWidgetItem *item = new QListWidgetItem(m_resultsList);
+        item->setText(f.name + "\n" + f.path);
+        item->setData(Qt::UserRole, f.path);
     }
+}
 
-    void OnRefresh(wxCommandEvent& event) {
-        m_refreshBtn->Disable();
-        m_statusText->SetLabel("Indexing...");
-        
-        FileEngine::Get().RefreshIndex([this](size_t count) {
-            // Call on UI thread
-            this->GetEventHandler()->CallAfter([this, count]() {
-                m_statusText->SetLabel(wxString::Format("Indexing complete. Total files: %zu", count));
-                m_refreshBtn->Enable();
-                // Re-trigger search to update view
-                wxCommandEvent dummy;
-                OnSearch(dummy);
-            });
-        });
-    }
+void MainWindow::onRefreshClicked() {
+    FileEngine::instance().refreshIndex();
+}
 
-    void OnItemActivated(wxListEvent& event) {
-        long index = event.GetIndex();
-        if (index >= 0 && index < (long)m_currentResults.size()) {
-            FileEngine::Get().OpenFile(m_currentResults[index].path);
-        }
-    }
+void MainWindow::onIndexingStarted() {
+    m_refreshBtn->setEnabled(false);
+    m_statusLabel->setText("Indexing system files... this might take a moment.");
+}
 
-    void UpdateList() {
-        m_listCtrl->DeleteAllItems();
-        for (long i = 0; i < (long)m_currentResults.size(); ++i) {
-            long idx = m_listCtrl->InsertItem(i, m_currentResults[i].name);
-            m_listCtrl->SetItem(idx, 1, m_currentResults[i].path);
-        }
-    }
-};
+void MainWindow::onIndexingFinished(int count) {
+    m_refreshBtn->setEnabled(true);
+    m_statusLabel->setText(QString("Indexing complete. Indexed %1 files.").arg(count));
+    performSearch();
+}
 
-class ModufileApp : public wxApp {
-public:
-    virtual bool OnInit() {
-        ModufileFrame* frame = new ModufileFrame();
-        frame->Show(true);
-        return true;
-    }
-};
+void MainWindow::onItemActivated(QListWidgetItem *item) {
+    QString path = item->data(Qt::UserRole).toString();
+    FileEngine::instance().openFile(path);
+}
 
-wxIMPLEMENT_APP(ModufileApp);
+int main(int argc, char *argv[]) {
+    QApplication a(argc, argv);
+    MainWindow w;
+    w.show();
+    return a.exec();
+}

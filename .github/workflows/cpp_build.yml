@@ -1,4 +1,4 @@
-name: Build C++ Modufile
+name: Build Qt Modufile
 
 on:
   push:
@@ -17,17 +17,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install Dependencies (Linux)
-      if: runner.os == 'Linux'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libwxgtk3.0-gtk3-dev build-essential
-
-    - name: Install Dependencies (macOS)
-      if: runner.os == 'macOS'
-      run: brew install wxwidgets
-
-    # Windows and macOS usually have necessary tools or managed by CMake auto-fetch
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: '6.5.3'
+        host: ${{ matrix.os == 'ubuntu-latest' && 'linux' || (matrix.os == 'macos-latest' && 'mac' || 'windows') }}
+        target: 'desktop'
+        arch: ${{ matrix.os == 'ubuntu-latest' && 'gcc_64' || (matrix.os == 'macos-latest' && 'clang_64' || 'win64_msvc2019_64') }}
+        install-deps: 'true'
 
     - name: Configure CMake
       run: cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
