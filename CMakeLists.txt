@@ -32,7 +32,7 @@ else()
 endif()
 
 # Include directories
-target_include_directories(modufile PRIVATE ${webview_SOURCE_DIR})
+target_include_directories(modufile PRIVATE ${webview_SOURCE_DIR} ${webview_SOURCE_DIR}/core/include)
 
 # Link libraries
 target_link_libraries(modufile PRIVATE webview)
